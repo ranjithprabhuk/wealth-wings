@@ -4,7 +4,7 @@ import { ZerodhaTickerChart } from './charts/zero-ticker-chart';
 import { RenkoChart } from './charts/renko-chart';
 import { ZerodhaRenkoChart } from './charts/zerodha-renko-chart';
 
-export function Trade() {
+export default function Trade() {
   const theme = useMantineTheme();
   const [formState, setFormState] = useState<Record<string, string | number>>({
     niftyFut: 8972290,

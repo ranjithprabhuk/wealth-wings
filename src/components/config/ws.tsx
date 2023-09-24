@@ -6,7 +6,7 @@ import { KiteTicker } from "../../kite-connect/kite-ticker";
 //   useWebSocket,
 // } from "../../hooks/websocket/useWebsocket";
 
-export const WebSocketDemo = () => {
+export default function WebSocketDemo () {
   // const { sendMessage } = useWebSocket((response) => {
   //   console.log("response", response);
   // });

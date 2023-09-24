@@ -1,9 +1,17 @@
+import React from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import Root from '../routes/root';
-import ErrorPage from '../routes/error-page';
-import { Dashboard } from '../components/dashboard/dashboard';
-import { Trade } from '../components/trade/trade';
-import { WebSocketDemo } from '../components/config/ws';
+// import ErrorPage from '../routes/error-page';
+// import { Dashboard } from '../components/dashboard/dashboard';
+// import { Trade } from '../components/trade/trade';
+// import { WebSocketDemo } from '../components/config/ws';
+
+
+// LAZY ROUTES
+const ErrorPage = React.lazy(() => import('../routes/error-page'))
+const Dashboard = React.lazy(() => import('../components/dashboard/dashboard'))
+const Trade = React.lazy(() => import('../components/trade/trade'))
+const WebSocketDemo = React.lazy(() => import('../components/config/ws'))
 
 const router = createBrowserRouter([
   {
