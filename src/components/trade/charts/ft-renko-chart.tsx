@@ -1,18 +1,19 @@
 import { Box } from '@mantine/core';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { IChartApi, OhlcData } from 'lightweight-charts';
 import { ChartContainer } from '../../charts/chart-container';
 import { CandlestickComponent } from '../../charts/candlestick-component';
-import { KiteTicker } from '../../../kite-connect/kite-ticker';
-import { getTickValue } from '../../../kite-connect/getTickValue';
 import { calculateSMA } from '../../../algo/calculateSMA';
 import { LineComponent } from '../../charts/line-component';
+import { WebsocketContext } from '../../../store/websocket-provider';
 
-interface IZerodhaRenkoChart {
+interface IFtRenkoChart {
   brickSize: number;
-  tickerId: number;
+  tickerId: string;
+  exchange: string;
 }
-export const ZerodhaRenkoChart = (props: IZerodhaRenkoChart) => {
+export const FtRenkoChart = (props: IFtRenkoChart) => {
+  const { socket, socketData } = useContext(WebsocketContext);
   const [chart, setChart] = useState<IChartApi>();
   const [data, setData] = useState({ data: [], sma: [], sma2: [] });
   // const [index, setIndex] = useState(0);
@@ -24,21 +25,6 @@ export const ZerodhaRenkoChart = (props: IZerodhaRenkoChart) => {
   }, []);
 
   const updateData = (price: number) => {
-    // const time = Date.now() ;
-
-    // setData(prevData => {
-    //   const prevSma = prevData.sma[prevData.sma.length - 1];
-    //   const time = prevSma?.time ? prevSma.time + 1 : Date.now();
-
-    //   const updatedPrice = [...prevData.price, { time, value: price }];
-    //   const updatedSma = [
-    //     ...prevData.sma,
-    //     { time, value: calculateSMA(price, prevSma?.value, prevData.sma.length, 9) },
-    //   ];
-
-    //   return { price: updatedPrice, sma: updatedSma };
-    // });
-
     setData(prevData => {
       const prevSma2 = prevData.sma2[prevData.sma2.length - 1];
       const time = prevSma2?.time ? prevSma2.time + 1 : Date.now();
@@ -97,23 +83,34 @@ export const ZerodhaRenkoChart = (props: IZerodhaRenkoChart) => {
   };
 
   useEffect(() => {
-    if (props.tickerId) {
-      // KiteTicker.subscribe([props.tickerId]);
-
-      KiteTicker.getTickerInstance().on('ticks', async ticks => {
-        if (ticks && ticks.length > 0) {
-          const tick = getTickValue(ticks, props.tickerId);
-          if (tick) {
-            updateData(tick.last_price);
-          }
-        }
-      });
+    if (props.tickerId && socket) {
+      if (socket.readyState === socket.OPEN) {
+        socket.send(
+          JSON.stringify({
+            k: `${props.exchange}|${props.tickerId}#`,
+            t: 't',
+          }),
+        );
+      }
     }
 
-    // return () => {
-    //   KiteTicker.unsubscribe([props.tickerId]);
-    // };
-  }, []);
+    return () => {
+      if (socket)
+        socket.send(
+          JSON.stringify({
+            k: `${props.exchange}|${props.tickerId}#`,
+            t: 'u',
+          }),
+        );
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    const tick: any = socketData[props.tickerId];
+    if (tick && tick.tk === props.tickerId && tick.lp) {
+      updateData(parseFloat(tick.lp));
+    }
+  }, [socketData[props.tickerId]]);
 
   return (
     <Box>

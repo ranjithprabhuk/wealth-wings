@@ -1,18 +1,19 @@
 import { Box } from '@mantine/core';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { IChartApi } from 'lightweight-charts';
 import { calculateSMA } from '../../../algo/calculateSMA';
 import { ChartContainer } from '../../charts/chart-container';
 import { AreaComponent } from '../../charts/area-component';
 import { BaselineComponent } from '../../charts/baseline-component';
-import { KiteTicker } from '../../../kite-connect/kite-ticker';
-import { getTickValue } from '../../../kite-connect/getTickValue';
+import { WebsocketContext } from '../../../store/websocket-provider';
 
-interface IZerodhaTickerChart {
-  tickerId: number;
+interface IFtTickerChart {
+  tickerId: string;
+  exchange: string;
 }
 
-export const ZerodhaTickerChart = (props: IZerodhaTickerChart) => {
+export const FtTickerChart = (props: IFtTickerChart) => {
+  const { socket, socketData } = useContext(WebsocketContext);
   const [chart, setChart] = useState<IChartApi>();
   const [data, setData] = useState({ price: [], sma: [] });
 
@@ -23,8 +24,6 @@ export const ZerodhaTickerChart = (props: IZerodhaTickerChart) => {
   }, []);
 
   const updateData = price => {
-    // const time = Date.now() ;
-
     setData(prevData => {
       const prevSma = prevData.sma[prevData.sma.length - 1];
       const time = prevSma?.time ? prevSma.time + 1 : Date.now();
@@ -40,24 +39,38 @@ export const ZerodhaTickerChart = (props: IZerodhaTickerChart) => {
   };
 
   useEffect(() => {
-    console.log('tickef', props.tickerId);
     if (props.tickerId) {
-      KiteTicker.subscribe([props.tickerId]);
-
-      KiteTicker.getTickerInstance().on('ticks', async ticks => {
-        if (ticks && ticks.length > 0) {
-          const tick = getTickValue(ticks, props.tickerId);
-          if (tick) {
-            updateData(tick.last_price);
-          }
+      if (socket) {
+        if (socket.readyState === socket.OPEN) {
+          console.log('socket.readyState === socket.OPEN', props.tickerId);
+          socket.send(
+            JSON.stringify({
+              k: `${props.exchange}|${props.tickerId}#`,
+              t: 't',
+            }),
+          );
         }
-      });
+      }
     }
 
     return () => {
-      KiteTicker.unsubscribe([props.tickerId]);
+      if (socket)
+        socket.send(
+          JSON.stringify({
+            k: `${props.exchange}|${props.tickerId}#`,
+            t: 'u',
+          }),
+        );
     };
-  }, []);
+  }, [socket]);
+
+  useEffect(() => {
+    console.log('asdad', socketData, props.tickerId);
+    const tick: any = socketData[props.tickerId];
+    if (tick && tick.tk === props.tickerId && tick.lp) {
+      updateData(parseFloat(tick.lp));
+    }
+  }, [socketData[props.tickerId]]);
 
   return (
     <Box>

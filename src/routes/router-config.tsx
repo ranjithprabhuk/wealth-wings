@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import Root from '../routes/root';
+import { Loader } from '@mantine/core';
 // import ErrorPage from '../routes/error-page';
 // import { Dashboard } from '../components/dashboard/dashboard';
 // import { Trade } from '../components/trade/trade';
@@ -18,22 +19,38 @@ export default function RouterConfiguration() {
       createBrowserRouter([
         {
           path: '/',
-          element: <Root />,
+          element: (
+            <Suspense fallback={<Loader />}>
+              <Root />
+            </Suspense>
+          ),
           errorElement: <ErrorPage />,
           children: [
             {
               path: '/dashboard',
-              element: <Dashboard />,
+              element: (
+                <Suspense fallback={<Loader />}>
+                  <Dashboard />
+                </Suspense>
+              ),
               errorElement: <ErrorPage />,
             },
             {
               path: '/trade',
-              element: <Trade />,
+              element: (
+                <Suspense fallback={<Loader />}>
+                  <Trade />
+                </Suspense>
+              ),
               errorElement: <ErrorPage />,
             },
             {
               path: '/ws',
-              element: <WebSocketDemo />,
+              element: (
+                <Suspense fallback={<Loader />}>
+                  <WebSocketDemo />
+                </Suspense>
+              ),
               errorElement: <ErrorPage />,
             },
           ],
@@ -41,6 +58,10 @@ export default function RouterConfiguration() {
       ]),
     [],
   );
-  
-  return <RouterProvider router={router} />;
+
+  return (
+    <Suspense fallback={<Loader />}>
+      <RouterProvider router={router} />{' '}
+    </Suspense>
+  );
 }

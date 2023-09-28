@@ -42,7 +42,6 @@ export default function Root() {
     }
 
     if (token) {
-      console.log('are you comingfin')
       await getUserInfo();
     }
   }
