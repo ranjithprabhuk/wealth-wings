@@ -2,10 +2,7 @@ import React, { Suspense, useMemo } from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import Root from '../routes/root';
 import { Loader } from '@mantine/core';
-// import ErrorPage from '../routes/error-page';
-// import { Dashboard } from '../components/dashboard/dashboard';
-// import { Trade } from '../components/trade/trade';
-// import { WebSocketDemo } from '../components/config/ws';
+import Authentication from './authentication';
 
 // LAZY ROUTES
 const ErrorPage = React.lazy(() => import('../routes/error-page'));
@@ -21,7 +18,9 @@ export default function RouterConfiguration() {
           path: '/',
           element: (
             <Suspense fallback={<Loader />}>
-              <Root />
+              <Authentication>
+                <Root />
+              </Authentication>
             </Suspense>
           ),
           errorElement: <ErrorPage />,

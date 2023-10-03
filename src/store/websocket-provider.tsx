@@ -1,13 +1,44 @@
 import { createContext, useEffect, useState } from 'react';
+import { getLocalStorageValue } from '../utils/localStorage/getLocalStorageValue';
 
-export const WebsocketContext = createContext<{ socket: WebSocket | null; socketData: Record<string, string> }>({
-  socket: null,
+export const WebsocketContext = createContext<{
+  socketData: Record<string, string>;
+  unSubscribeToInstrument: (exchange: string, token: string) => void;
+  subscribeToInstrument: (exchange: string, token: string) => void;
+  isSocketReady: boolean;
+}>({
   socketData: {},
+  subscribeToInstrument: () => {},
+  unSubscribeToInstrument: () => {},
+  isSocketReady: false,
 });
 
 export const WebsocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
+  const [isSocketReady, setIsSocketReady] = useState(false);
   const [socketData, updateSocketData] = useState<Record<string, string>>({});
+
+  function subscribeToInstrument(exchange: string, token: string) {
+    if (socket.readyState === socket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          k: `${exchange}|${token}#`,
+          t: 't',
+        }),
+      );
+    }
+  }
+
+  function unSubscribeToInstrument(exchange: string, token: string) {
+    if (socket.readyState === socket.OPEN) {
+      socket.send(
+        JSON.stringify({
+          k: `${exchange}|${token}#`,
+          t: 'u',
+        }),
+      );
+    }
+  }
 
   useEffect(() => {
     const webSocket = new WebSocket(import.meta.env.VITE_WS_URL);
@@ -16,9 +47,9 @@ export const WebsocketProvider = ({ children }) => {
       webSocket.send(
         JSON.stringify({
           t: 'c',
-          uid: window.localStorage.getItem('userId'),
-          actid: window.localStorage.getItem('userId'),
-          susertoken: window.localStorage.getItem('token'),
+          uid: getLocalStorageValue('userId'),
+          actid: getLocalStorageValue('userId'),
+          susertoken: getLocalStorageValue('token'),
           source: 'API',
         }),
       );
@@ -28,13 +59,30 @@ export const WebsocketProvider = ({ children }) => {
       const response = JSON.parse(event.data);
       if (!socket && response.s === 'OK') {
         setSocket(webSocket);
+        setIsSocketReady(x => !x);
       }
-console.log('sadsadsadsadkjksadk asjdksajdjas', socket, response)
       if (response.t === 'tf') {
         updateSocketData(existingData => {
           return { ...existingData, [response.tk]: response };
         });
       }
+
+      // if(result.t == 'ck')
+      // {
+      //      trigger("open", [result]);
+      // }
+      // if( result.t == 'tk' || result.t == 'tf')
+      // {
+      //      trigger("quote", [result]);
+      // }
+      // if( result.t == 'dk' || result.t == 'df')
+      // {
+      //      trigger("quote", [result]);
+      // }
+      // if(result.t == 'om')
+      // {
+      //      trigger("order", [result]);
+      // }
     };
 
     return () => {
@@ -42,5 +90,9 @@ console.log('sadsadsadsadkjksadk asjdksajdjas', socket, response)
     };
   }, []);
 
-  return <WebsocketContext.Provider value={{ socket, socketData }}>{children}</WebsocketContext.Provider>;
+  return (
+    <WebsocketContext.Provider value={{ socketData, subscribeToInstrument, unSubscribeToInstrument, isSocketReady }}>
+      {children}
+    </WebsocketContext.Provider>
+  );
 };

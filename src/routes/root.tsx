@@ -1,10 +1,9 @@
-import { AppShell, Box, Loader } from '@mantine/core';
-import { Outlet, useSearchParams } from 'react-router-dom';
-import { HeaderResponsive } from '../components/layouts/header/header';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { authenticateUser } from '../services/auth';
-import { getUserProfile } from '../services/user';
-import { Stat } from '../enum/stat';
+import { AppShell, Box } from '@mantine/core';
+import { Outlet } from 'react-router-dom';
+import { useContext } from 'react';
+import { WebsocketContext } from '../store/websocket-provider';
+import { Header } from '../components/layouts/header/header';
+import { PageLoader } from '../components/shared/page-loader';
 
 const routes = [
   { label: 'Dashboard', link: '/dashboard' },
@@ -14,88 +13,20 @@ const routes = [
 ];
 
 export default function Root() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const requestCode = useMemo(() => searchParams.get('code'), [searchParams]);
+  const { isSocketReady } = useContext(WebsocketContext);
 
-  const redirectToAuth = useCallback(() => {
-    window.localStorage.removeItem('token');
-    window.localStorage.removeItem('userId');
-    window.location.replace(`${import.meta.env.VITE_AUTH_REDIRECT_URL}${import.meta.env.VITE_API_KEY}`);
-  }, []);
-
-  async function OnAuthRedirection() {
-    if (requestCode) {
-      const response = await authenticateUser(requestCode);
-      if (response.stat == Stat.Ok) {
-        window.localStorage.setItem('token', response.token);
-        window.localStorage.setItem('userId', response.client);
-        onAuthSuccess();
-      }
-    }
-  }
-
-  async function OnAppInit() {
-    const token = window.localStorage.getItem('token');
-    if (!token && !requestCode) {
-      redirectToAuth();
-    }
-
-    if (token) {
-      await getUserInfo();
-    }
-  }
-
-  async function getUserInfo() {
-    const userInfo = await getUserProfile();
-    if (userInfo.stat === Stat.Ok) {
-      setIsAuthenticated(true);
-    } else {
-      redirectToAuth();
-    }
-  }
-
-  function onAuthSuccess() {
-    setIsAuthenticated(true);
-    searchParams.delete('code');
-    searchParams.delete('client');
-    setSearchParams(searchParams);
-  }
-
-  useEffect(() => {
-    OnAuthRedirection();
-  }, [requestCode]);
-
-  useEffect(() => {
-    OnAppInit();
-  }, []);
-
-  if (!isAuthenticated) {
-    return (
-      <Box display={'flex'} style={{ width: '100vw', height: '100vh', justifyContent: 'center' }}>
-        <Loader size={30} />
-      </Box>
-    );
+  if (!isSocketReady) {
+    return <PageLoader />;
   }
 
   return (
-    <AppShell
-      padding="md"
-      // navbar={
-      //   <Navbar width={{ base: 300 }} height={500} p="xs">
-      //     {/* Navbar content */}
-      //   </Navbar>
-      // }
-      header={<HeaderResponsive key={'header'} links={routes} />}
-      styles={theme => ({
-        main: {
-          backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0],
-          padding: 0,
-          paddingTop: 'calc(var(--mantine-header-height, 0px))',
-        },
-      })}
-    >
-      <Outlet />
+    <AppShell header={{ height: { base: 48 } }}>
+      <AppShell.Header>
+        <Header links={routes} />
+      </AppShell.Header>
+      <Box mt={48} p={12}>
+        <Outlet />
+      </Box>
     </AppShell>
   );
 }

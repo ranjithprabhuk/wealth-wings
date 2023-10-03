@@ -7,13 +7,13 @@ import { AreaComponent } from '../../charts/area-component';
 import { BaselineComponent } from '../../charts/baseline-component';
 import { WebsocketContext } from '../../../store/websocket-provider';
 
-interface IFtTickerChart {
+interface ITickerChart {
   tickerId: string;
   exchange: string;
 }
 
-export const FtTickerChart = (props: IFtTickerChart) => {
-  const { socket, socketData } = useContext(WebsocketContext);
+export const TickerChart = (props: ITickerChart) => {
+  const { socketData, subscribeToInstrument, unSubscribeToInstrument } = useContext(WebsocketContext);
   const [chart, setChart] = useState<IChartApi>();
   const [data, setData] = useState({ price: [], sma: [] });
 
@@ -31,7 +31,7 @@ export const FtTickerChart = (props: IFtTickerChart) => {
       const updatedPrice = [...prevData.price, { time, value: price }];
       const updatedSma = [
         ...prevData.sma,
-        { time, value: calculateSMA(price, prevSma?.value, prevData.sma.length, 29) },
+        { time, value: calculateSMA(price, prevSma?.value, prevData.sma.length, 20) },
       ];
 
       return { price: updatedPrice, sma: updatedSma };
@@ -40,32 +40,15 @@ export const FtTickerChart = (props: IFtTickerChart) => {
 
   useEffect(() => {
     if (props.tickerId) {
-      if (socket) {
-        if (socket.readyState === socket.OPEN) {
-          console.log('socket.readyState === socket.OPEN', props.tickerId);
-          socket.send(
-            JSON.stringify({
-              k: `${props.exchange}|${props.tickerId}#`,
-              t: 't',
-            }),
-          );
-        }
-      }
+      subscribeToInstrument(props.exchange, props.tickerId);
     }
 
     return () => {
-      if (socket)
-        socket.send(
-          JSON.stringify({
-            k: `${props.exchange}|${props.tickerId}#`,
-            t: 'u',
-          }),
-        );
+      unSubscribeToInstrument(props.exchange, props.tickerId);
     };
-  }, [socket]);
+  }, []);
 
   useEffect(() => {
-    console.log('asdad', socketData, props.tickerId);
     const tick: any = socketData[props.tickerId];
     if (tick && tick.tk === props.tickerId && tick.lp) {
       updateData(parseFloat(tick.lp));

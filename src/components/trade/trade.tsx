@@ -1,170 +1,150 @@
-import { Container, SimpleGrid, useMantineTheme, Box, TextInput, Button, NumberInput, Flex } from '@mantine/core';
-import { useCallback, useState } from 'react';
-import { FtTickerChart } from './charts/FT-ticker-chart';
-import { WebsocketProvider } from '../../store/websocket-provider';
-import { FtRenkoChart } from './charts/ft-renko-chart';
+import { Box, NumberInput, Select, Grid, TextInput } from '@mantine/core';
+import { useEffect, useMemo, useState } from 'react';
+import { getMarketWatchList } from '../../services/market/marketwatch';
+import { IMarketWatch } from '../../types/marketwatch';
+import OptionWidget from './options-widget';
+import { OptionsType } from '../../enum/option-type';
+import { OrderConfiguration } from '../../types/order-configuration';
+// import { TickerChart } from './charts/ticker-chart';
+// import { RenkoChart } from './charts/renko-chart';
+import { RenkoTestChart } from './charts/renko-test-chart';
+import { ProductName } from '../../enum/product-name';
+import { ProductType } from '../../enum/product-type';
+import { useHotkeys } from '@mantine/hooks';
 
 export default function Trade() {
-  const theme = useMantineTheme();
-  const [formState, setFormState] = useState<Record<string, string | number>>({
-    niftyFut: '35048',
-    bankNiftyFut: '35048',
+  const [marketWatchList, setMarketWatchList] = useState<IMarketWatch[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState<string>('2');
+  const [orderConfig, setOrderConfig] = useState<OrderConfiguration>({
+    profitTarget: 3,
+    stopLoss: 3,
     quantity: 50,
+    productName: ProductName.NRML,
+    productType: ProductType.Market,
   });
-  const [isSubscribed, setIsSubscribed] = useState(false);
 
-  const handleChange = (key: string, value: string | number) => {
-    setFormState(prevState => {
+  function handleChange(key: string, value: number | string) {
+    setOrderConfig(prevState => {
       return { ...prevState, [key]: value };
     });
-  };
+  }
 
-  const handleSubscribe = useCallback(() => {
-    setIsSubscribed(true);
-  }, [formState]);
+  async function handleIndexChange(value: string) {
+    const response = await getMarketWatchList(value);
+    setMarketWatchList(response.values);
+    setSelectedIndex(value);
+  }
+
+  useEffect(() => {
+    handleIndexChange(selectedIndex);
+  }, []);
+
+  const selectedFutures = useMemo(() => {
+    if (marketWatchList && marketWatchList.length > 0) {
+      return marketWatchList.find(instrument => instrument.optt === 'XX' && instrument.instname === 'FUTIDX');
+    }
+  }, [marketWatchList]);
 
   return (
-    <Container my="md" fluid>
-      <WebsocketProvider>
+    <Box>
+      <Box>
         <Box>
-          <Box>
-            <SimpleGrid
-              cols={6}
-              spacing="lg"
-              breakpoints={[
-                { maxWidth: 'md', cols: 3, spacing: 'md' },
-                { maxWidth: 'sm', cols: 2, spacing: 'sm' },
-                { maxWidth: 'xs', cols: 1, spacing: 'sm' },
-              ]}
-            >
-              <div>
-                <Box>
-                  <TextInput
-                    label="Nifty FUT"
-                    value={formState.niftyFut as number}
-                    disabled={isSubscribed}
-                    onChange={e => handleChange('niftyFut', e.target.value)}
-                  />
-                </Box>
-              </div>
-              <div>
-                <Box>
-                  <TextInput
-                    label="Bank Nifty FUT"
-                    value={formState.bankNiftyFut as number}
-                    disabled={isSubscribed}
-                    onChange={e => handleChange('bankNiftyFut', e.target.value)}
-                  />
-                </Box>
-              </div>
-              <div>
-                <Box>
-                  <TextInput
-                    label="CALL Symbol"
-                    value={formState.callSymbol as string}
-                    disabled={isSubscribed}
-                    onChange={e => handleChange('callSymbol', e.target.value)}
-                  />
-                </Box>
-              </div>
-              <div>
-                <Box>
-                  <TextInput
-                    label="PUT Symbol"
-                    disabled={isSubscribed}
-                    value={formState.putSymbol as string}
-                    onChange={e => handleChange('putSymbol', e.target.value)}
-                  />
-                </Box>
-              </div>
-              <div>
-                <Box>
-                  <NumberInput
-                    label="Qty"
-                    value={formState.quantity as number}
-                    disabled={isSubscribed}
-                    onChange={value => handleChange('quantity', value)}
-                  />
-                </Box>
-              </div>
-              <Box display={'flex'} style={{ justifyContent: 'end', alignItems: 'end' }}>
-                <Box>
-                  <Button onClick={handleSubscribe}>Subscribe</Button>
+          <Grid>
+            <Grid.Col span="auto">
+              <Box>
+                <OptionWidget orderConfig={orderConfig} marketWatchList={marketWatchList} optionType={OptionsType.CE} />
+              </Box>
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, xs: 12, sm: 12, md: 6 }}>
+              <Box>
+                <Box display={'flex'} style={{ justifyContent: 'space-around' }}>
+                  <Box>
+                    <Select
+                      placeholder={'Index'}
+                      data={[
+                        { value: '1', label: 'Nifty' },
+                        { value: '2', label: 'Bank Nifty' },
+                        { value: '3', label: 'Fin Nifty' },
+                      ]}
+                      onChange={handleIndexChange}
+                      value={selectedIndex}
+                    />
+                  </Box>
+                  <Box style={{ width: 80 }}>
+                    <NumberInput
+                      placeholder="Quantity"
+                      value={orderConfig.quantity}
+                      onChange={value => handleChange('quantity', value as number)}
+                      step={50}
+                    />
+                  </Box>
+                  <Box style={{ width: 80 }}>
+                    <NumberInput
+                      placeholder="Target"
+                      value={orderConfig.profitTarget}
+                      onChange={value => handleChange('profitTarget', value as number)}
+                      style={{ borderLeft: '3px solid green', borderRadius: 4 }}
+                    />
+                  </Box>
+                  <Box style={{ width: 80 }}>
+                    <NumberInput
+                      placeholder="Stop Loss"
+                      value={orderConfig.stopLoss}
+                      onChange={value => handleChange('stopLoss', value as number)}
+                      style={{ borderLeft: '3px solid red', borderRadius: 4 }}
+                    />
+                  </Box>
+                  <Box style={{ width: 100 }}>
+                    <Select
+                      data={Object.keys(ProductName).map(name => {
+                        return { value: ProductName[name], label: name };
+                      })}
+                      placeholder="Product Name"
+                      value={orderConfig.productName}
+                      onChange={value => handleChange('productName', value)}
+                    />
+                  </Box>
+                  <Box style={{ width: 120 }}>
+                    <Select
+                      data={[
+                        { value: ProductType.Limit, label: 'Limit' },
+                        { value: ProductType.Market, label: 'Market' },
+                      ]}
+                      placeholder="Product Type"
+                      value={orderConfig.productType}
+                      onChange={value => handleChange('productType', value)}
+                    />
+                  </Box>
                 </Box>
               </Box>
-            </SimpleGrid>
-          </Box>
-          {isSubscribed && (
-            <Box mt={12}>
-              <SimpleGrid
-                cols={2}
-                spacing="lg"
-                breakpoints={[
-                  { maxWidth: 'md', cols: 2, spacing: 'md' },
-                  { maxWidth: 'sm', cols: 1, spacing: 'sm' },
-                  { maxWidth: 'xs', cols: 1, spacing: 'sm' },
-                ]}
-              >
-                <Box>
-                  <SimpleGrid
-                    cols={2}
-                    spacing="lg"
-                    breakpoints={[
-                      { maxWidth: 'md', cols: 2, spacing: 'md' },
-                      { maxWidth: 'sm', cols: 1, spacing: 'sm' },
-                      { maxWidth: 'xs', cols: 1, spacing: 'sm' },
-                    ]}
-                  >
-                    <Box>
-                      <Flex style={{ justifyContent: 'flex-start' }}>
-                        <Box>
-                          <Button variant="filled" color="green">
-                            Buy CALL &uarr;
-                          </Button>
-                        </Box>
-                      </Flex>
-                    </Box>
-                    <Box>
-                      <Flex style={{ justifyContent: 'flex-end' }}>
-                        <Box>
-                          <Button variant="filled" color="red">
-                            Buy PUT &darr;
-                          </Button>
-                        </Box>
-                      </Flex>
-                    </Box>
-                  </SimpleGrid>
-                </Box>
-                <Box>
-                  <Box>
-                    <FtTickerChart exchange="NFO" tickerId={formState.niftyFut as string} />
-                  </Box>
-
-                  {/* <Box>
-                  <ZerodhaTickerChart tickerId={formState.bankNiftyFut as number} />
-                </Box> */}
-                </Box>
-                <Box>
-                  {/* <Box>
-                  <ZerodhaRenkoChart tickerId={formState.niftyFut as number} brickSize={2} />
-                </Box>
-
-                <Box>
-                <ZerodhaRenkoChart tickerId={formState.bankNiftyFut as number} brickSize={2} />
-                </Box> */}
-                </Box>
-              </SimpleGrid>
-            </Box>
-          )}
+            </Grid.Col>
+            <Grid.Col span="auto">
+              <OptionWidget orderConfig={orderConfig} marketWatchList={marketWatchList} optionType={OptionsType.PE} />
+            </Grid.Col>
+          </Grid>
         </Box>
-        {isSubscribed && (
+      </Box>
+      {false && (
+        <Box mt={12}>
           <Box>
-            <FtRenkoChart brickSize={3} exchange="NFO" tickerId={formState.niftyFut as string} />
+            <RenkoTestChart brickSize={3} />
+          </Box>
+          <Box>{/* <RenkoTestChart brickSize={2} /> */}</Box>
+        </Box>
+      )}
+      {/* <Box mt={12}>
+        {selectedFutures?.token && selectedFutures?.exch && (
+          <Box>
+            <Box>
+              <TickerChart exchange={selectedFutures.exch} tickerId={selectedFutures.token} />
+            </Box>
+            <Box>
+              <RenkoChart brickSize={3} exchange={selectedFutures.exch} tickerId={selectedFutures.token} />
+            </Box>
           </Box>
         )}
-        <Box>{/* <RenkoChart brickSize={2} /> */}</Box>
-        <Box>{/* <RenkoChart brickSize={3} /> */}</Box>
-      </WebsocketProvider>
-    </Container>
+      </Box> */}
+    </Box>
   );
 }
