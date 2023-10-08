@@ -3,6 +3,8 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import Root from '../routes/root';
 import { Loader } from '@mantine/core';
 import Authentication from './authentication';
+import { TradeProvider } from '../store/trade-provider';
+import { Login } from '../components/auth/zerodha/login';
 
 // LAZY ROUTES
 const ErrorPage = React.lazy(() => import('../routes/error-page'));
@@ -38,7 +40,18 @@ export default function RouterConfiguration() {
               path: '/trade',
               element: (
                 <Suspense fallback={<Loader />}>
-                  <Trade />
+                  <TradeProvider>
+                    <Trade />
+                  </TradeProvider>
+                </Suspense>
+              ),
+              errorElement: <ErrorPage />,
+            },
+            {
+              path: '/auth',
+              element: (
+                <Suspense fallback={<Loader />}>
+                  <Login />
                 </Suspense>
               ),
               errorElement: <ErrorPage />,

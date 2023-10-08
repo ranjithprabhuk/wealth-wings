@@ -1,5 +1,5 @@
 import { Box, Text } from '@mantine/core';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { WebsocketContext } from '../../store/websocket-provider';
 
 interface IInstrumentWidget {
@@ -10,6 +10,7 @@ interface IInstrumentWidget {
 
 export default function InstrumentWidget(props: IInstrumentWidget) {
   const { subscribeToInstrument, unSubscribeToInstrument, socketData } = useContext(WebsocketContext);
+  const [price, setPrice] = useState('');
 
   useEffect(() => {
     if (props.instrumentToken && props.exchange) {
@@ -21,6 +22,12 @@ export default function InstrumentWidget(props: IInstrumentWidget) {
     };
   }, [props.instrumentToken, props.exchange]);
 
+  useEffect(() => {
+    if (socketData?.[props.instrumentToken]?.['lp']) {
+      setPrice(socketData?.[props.instrumentToken]?.['lp']);
+    }
+  }, [socketData?.[props.instrumentToken]?.['lp']]);
+
   return (
     <Box display={'flex'} style={{ flexDirection: 'column', justifyContent: 'center' }}>
       <Box>
@@ -28,7 +35,7 @@ export default function InstrumentWidget(props: IInstrumentWidget) {
       </Box>
       <Box>
         <Text size="md" c={'blue'}>
-          {socketData?.[props.name]?.['lp'] || 'Loading...'}
+          {price || 'Loading...'}
         </Text>
       </Box>
     </Box>

@@ -1,6 +1,8 @@
 export async function fetchWrapper(requestUrl: RequestInfo | URL, request?: RequestInit): Promise<any> {
   return await fetch(requestUrl, request)
-    .then(response => response.json())
+    .then(response => {
+      return response.json();
+    })
     .then(data => {
       console.log('data', data);
       return data;

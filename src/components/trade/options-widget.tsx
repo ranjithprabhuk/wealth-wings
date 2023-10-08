@@ -1,22 +1,22 @@
 import { Box, Select } from '@mantine/core';
 import { useContext, useMemo, useState } from 'react';
-import { IMarketWatch } from '../../types/marketwatch';
 import { OptionsType } from '../../enum/option-type';
 import { WebsocketContext } from '../../store/websocket-provider';
 import OrderWidget from './order-widget';
 import { OrderType } from '../../enum/order-type';
-import { OrderConfiguration } from '../../types/order-configuration';
+import { IOrderConfiguration } from '../../types/order-configuration';
+import { IInstrument } from '../../types/instrument';
 
 interface IOptionsWidget {
-  marketWatchList: IMarketWatch[];
+  marketWatchList: IInstrument[];
   optionType: OptionsType;
-  orderConfig: OrderConfiguration;
-  onSelect?: (selectedOption: IMarketWatch) => void;
+  orderConfig: IOrderConfiguration;
+  onSelect?: (selectedOption: IInstrument) => void;
 }
 
 export default function OptionWidget(props: IOptionsWidget) {
   const { subscribeToInstrument, unSubscribeToInstrument } = useContext(WebsocketContext);
-  const [selectedOption, setSelectedOption] = useState<IMarketWatch>();
+  const [selectedOption, setSelectedOption] = useState<IInstrument>();
 
   function handleOptionChange(selectedValue: string) {
     if (selectedOption) {
@@ -45,12 +45,7 @@ export default function OptionWidget(props: IOptionsWidget) {
         <Box display={'flex'} style={{ justifyContent: 'space-between' }}>
           {selectedOption && (
             <Box>
-              <OrderWidget
-                optionType={props.optionType}
-                orderType={OrderType.Buy}
-                instrument={selectedOption}
-                orderConfig={props.orderConfig}
-              />
+              <OrderWidget optionType={props.optionType} orderType={OrderType.Buy} instrument={selectedOption} />
             </Box>
           )}
           <Box style={{ width: 260 }}>
@@ -63,12 +58,7 @@ export default function OptionWidget(props: IOptionsWidget) {
           </Box>
           <Box>
             {selectedOption && (
-              <OrderWidget
-                optionType={props.optionType}
-                orderType={OrderType.Sell}
-                instrument={selectedOption}
-                orderConfig={props.orderConfig}
-              />
+              <OrderWidget optionType={props.optionType} orderType={OrderType.Sell} instrument={selectedOption} />
             )}
           </Box>
         </Box>

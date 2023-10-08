@@ -8,7 +8,7 @@ import { PageLoader } from '../components/shared/page-loader';
 const routes = [
   { label: 'Dashboard', link: '/dashboard' },
   { label: 'Trade', link: '/trade' },
-  { label: 'WS', link: '/ws' },
+  { label: 'Angel', link: '/angel' },
   { label: 'Chart', link: '/chart' },
 ];
 

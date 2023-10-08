@@ -3,26 +3,27 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { WebsocketContext } from '../../store/websocket-provider';
 import { OrderType } from '../../enum/order-type';
 import { placeOrder } from '../../services/order/placeOrder';
-import { IMarketWatch } from '../../types/marketwatch';
 import { ProductName } from '../../enum/product-name';
 import { ProductType } from '../../enum/product-type';
 import { RetentionType } from '../../enum/rentention-type';
-import { OrderConfiguration } from '../../types/order-configuration';
+import { IOrderConfiguration } from '../../types/order-configuration';
 import { OptionsType } from '../../enum/option-type';
+import { IInstrument } from '../../types/instrument';
+import { TradeContext } from '../../store/trade-provider';
 
 interface IOrderWidget {
   optionType: OptionsType;
   orderType: OrderType;
-  instrument: IMarketWatch;
-  orderConfig: OrderConfiguration;
+  instrument: IInstrument;
 }
 
 export default function OrderWidget(props: IOrderWidget) {
-  const { socketData } = useContext(WebsocketContext);
-  const [price, setPrice] = useState('12.50');
+  const { socketData, subscribeToInstrument, unSubscribeToInstrument } = useContext(WebsocketContext);
+  const { orderConfig } = useContext(TradeContext);
+  const [price, setPrice] = useState();
 
   async function handlePlaceOrder() {
-    const { productName, productType, quantity, stopLoss, profitTarget } = props.orderConfig;
+    const { productName, productType, quantity, stopLoss, profitTarget } = orderConfig;
     if (props.orderType === OrderType.Buy) {
       if (productName === ProductName.BO) {
         await placeOrder(
@@ -76,9 +77,19 @@ export default function OrderWidget(props: IOrderWidget) {
     }
   }, [key, socketData?.[props.instrument.token]]);
 
+  useEffect(() => {
+    if (props.instrument.exch && props.instrument.token) {
+      subscribeToInstrument(props.instrument.exch, props.instrument.token);
+    }
+
+    return () => {
+      unSubscribeToInstrument(props.instrument.exch, props.instrument.token);
+    };
+  }, [props.instrument]);
+
   return (
     <Box>
-      <Button color={props.orderType === OrderType.Buy ? 'green' : 'red'} onClick={handlePlaceOrder}>
+      <Button size="compact-xs" color={props.orderType === OrderType.Buy ? 'green' : 'red'} onClick={handlePlaceOrder}>
         {props.orderType} {price ? ` - ${price}` : ''}
       </Button>
     </Box>

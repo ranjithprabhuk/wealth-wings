@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import InstrumentWidget from '../../trade/instrument-widget';
 import { useEffect, useState } from 'react';
 import { getMarketWatchList } from '../../../services/market/marketwatch';
-import { IMarketWatch } from '../../../types/marketwatch';
+import { IInstrument } from '../../../types/instrument';
 
 interface IHeader {
   links: { link: string; label: string }[];
@@ -55,13 +55,11 @@ export function Header({ links }: IHeader) {
 }
 
 function InstrumentWidgets() {
-  const [instrumentList, setInstrumentList] = useState<IMarketWatch[]>([]);
+  const [instrumentList, setInstrumentList] = useState<IInstrument[]>([]);
 
   useEffect(() => {
     getMarketWatchList('5').then(result => setInstrumentList(result.values || []));
   }, []);
-
-  console.log('instrumentList', instrumentList);
 
   return instrumentList.map(instrument => (
     <InstrumentWidget

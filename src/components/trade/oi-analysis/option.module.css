@@ -1,0 +1,5 @@
+.strike_price_cell {
+  background: var(--_table-border-color);
+  border-bottom-left-radius: 50px;
+  border-top-right-radius: 50px;
+}

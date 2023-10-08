@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { KiteTicker } from "../../kite-connect/kite-ticker";
+import { KiteTicker } from "../../../server/kite-connect/kite-ticker";
 
 // import {
 //   WebSocketProvider,

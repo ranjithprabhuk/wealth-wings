@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 // import ReactApexChart from "react-apexcharts";
 import { Box, Button } from "@mantine/core";
-import { KiteTicker } from "../../../kite-connect/kite-ticker";
+import { KiteTicker } from "../../../../server/kite-connect/kite-ticker";
 
 const chartOptions = {
   chart: {

@@ -3,7 +3,7 @@ import { ProductName } from '../../enum/product-name';
 import { ProductType } from '../../enum/product-type';
 import { RetentionType } from '../../enum/rentention-type';
 import { Stat } from '../../enum/stat';
-import { IMarketWatch } from '../../types/marketwatch';
+import { IInstrument } from '../../types/instrument';
 import { getLocalStorageValue } from '../../utils/localStorage/getLocalStorageValue';
 import { fetchWrapper } from '../fetchWrapper';
 
@@ -23,7 +23,7 @@ export async function placeOrder(
   mkt_protection = 5,
 ): Promise<{
   stat: Stat;
-  values: IMarketWatch[];
+  values: IInstrument[];
 }> {
   const payload = {
     uid: getLocalStorageValue('userId'),
