@@ -1,0 +1,46 @@
+import { OrderStatus } from '../enum/order-status';
+import { ProductType } from '../enum/product-type';
+import { RetentionType } from '../enum/rentention-type';
+
+export interface Order {
+  stat: string;
+  norenordno: string;
+  kidid: string;
+  uid: string;
+  actid: string;
+  exch: string;
+  tsym: string;
+  qty: string;
+  ordenttm: string;
+  sno_fillid: string;
+  trantype: string;
+  prctyp: ProductType;
+  ret: RetentionType;
+  token: string;
+  mult: string;
+  prcftr: string;
+  instname: string;
+  ordersource: string;
+  dname: string;
+  pp: string;
+  ls: string;
+  ti: string;
+  prc: string;
+  rprc: string;
+  dscqty: string;
+  s_prdt_ali: string;
+  prd: string;
+  status: OrderStatus;
+  st_intrn: string;
+  norentm: string;
+  exch_tm: string;
+  snonum: string;
+  snoordt: string;
+  remarks: string;
+  exchordid: string;
+  rqty: string;
+  rejreason: string;
+  trgprc: string;
+  rtrgprc: string;
+  cancelqty: string;
+}

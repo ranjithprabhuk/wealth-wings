@@ -13,20 +13,22 @@ interface ITradeContext {
   selectedExpiryDate: IOptionExpiry;
   futuresList: IFuturesInstrument[];
   expiryList: IOptionExpiry[];
+  recentOrderId: string;
   handleOrderConfigUpdate: (key: string, value: number | string) => void;
   setSelectedIndex: (instrument: IInstrument) => void;
   setSelectedFutures: (instrument: IFuturesInstrument) => void;
   setSelectedExpiryDate: (expiry: IOptionExpiry) => void;
   setFuturesList: (list: IFuturesInstrument[]) => void;
   setExpiryList: (list: IOptionExpiry[]) => void;
+  setRecentOrderId: (orderId: string) => void;
 }
 
 const initialTradeContextData: ITradeContext = {
   orderConfig: {
-    profitTarget: 3,
-    stopLoss: 3,
-    quantity: 50,
-    productName: ProductName.NRML,
+    profitTarget: 1,
+    stopLoss: 5,
+    quantity: 100,
+    productName: ProductName.BO,
     productType: ProductType.Market,
   },
   selectedIndex: null,
@@ -34,12 +36,14 @@ const initialTradeContextData: ITradeContext = {
   selectedExpiryDate: null,
   futuresList: [],
   expiryList: [],
+  recentOrderId: '',
   handleOrderConfigUpdate: () => {},
   setSelectedIndex: () => {},
   setSelectedFutures: () => {},
   setSelectedExpiryDate: () => {},
   setFuturesList: () => {},
   setExpiryList: () => {},
+  setRecentOrderId: () => {},
 };
 
 export const TradeContext = createContext<ITradeContext>(initialTradeContextData);
@@ -50,11 +54,12 @@ export const TradeProvider = ({ children }) => {
   const [selectedExpiryDate, setSelectedExpiryDate] = useState<IOptionExpiry>();
   const [futuresList, setFuturesList] = useState<IFuturesInstrument[]>([]);
   const [expiryList, setExpiryList] = useState<IOptionExpiry[]>([]);
+  const [recentOrderId, setRecentOrderId] = useState('');
   const [orderConfig, setOrderConfig] = useState<IOrderConfiguration>({
-    profitTarget: 3,
-    stopLoss: 3,
-    quantity: 50,
-    productName: ProductName.NRML,
+    profitTarget: 1,
+    stopLoss: 5,
+    quantity: 100,
+    productName: ProductName.BO,
     productType: ProductType.Market,
   });
 
@@ -73,12 +78,14 @@ export const TradeProvider = ({ children }) => {
         selectedExpiryDate,
         futuresList,
         expiryList,
+        recentOrderId,
         handleOrderConfigUpdate,
         setSelectedIndex,
         setSelectedFutures,
         setSelectedExpiryDate,
         setFuturesList,
         setExpiryList,
+        setRecentOrderId,
       }}
     >
       {children}

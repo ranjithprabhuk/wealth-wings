@@ -41,7 +41,12 @@ export default function OiAnalysis() {
 
   useEffect(() => {
     if (selectedFutures) {
+      // const getOiDataInInterval = setInterval(getOiData, 1000 * 20);
+
       getOiData();
+      return () => {
+        // clearInterval(getOiDataInInterval);
+      };
     }
   }, [selectedFutures]);
 
@@ -49,14 +54,13 @@ export default function OiAnalysis() {
     <Box>
       <Box display={'flex'} style={{ justifyContent: 'space-between' }}>
         <Box>
-          <DateInput value={dateValue} onChange={setDateValue} label="Date input" placeholder="Date input" />
+          <DateInput value={dateValue} onChange={setDateValue} placeholder="Date input" />
         </Box>
         <Box>
           <Select
             data={ChartInterval}
             value={selectedChartInterval}
             onChange={setSelectedChartInterval}
-            label="Interval"
             placeholder="Interval"
           />
         </Box>

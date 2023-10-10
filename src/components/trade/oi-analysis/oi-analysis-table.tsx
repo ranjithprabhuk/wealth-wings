@@ -9,7 +9,7 @@ interface IOiAnalysisTable {
 export default function OiAnalysisTable(props: IOiAnalysisTable) {
   return (
     <Table.ScrollContainer minWidth={800}>
-      <Table verticalSpacing="xs">
+      <Table verticalSpacing={0}>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Time</Table.Th>
@@ -23,7 +23,7 @@ export default function OiAnalysisTable(props: IOiAnalysisTable) {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {props.candles.map((candle, index) => (
+          {props.candles.filter((d, i) => i < 8).map((candle, index) => (
             <OiAnalysisRows candle={candle} previousCandle={props.candles[index - 1] || candle} rsi={props.technicalIndicators.rsi[index]} />
           ))}
         </Table.Tbody>

@@ -42,10 +42,9 @@ export function OiAnalysisRows(props: IOiAnalysisRows) {
 
 function calculateOiInference(previousCandle: number[], candle: number[]) {
   const priceTrend = candle[1] > candle[4] && previousCandle[4] > candle[4];
-  const volumeTrend = previousCandle[5] > candle[5];
   const oiTrend = previousCandle[6] - candle[6];
 
-  if (oiTrend !== 0 && (oiTrend >= 10000 || oiTrend <= -10000)) {
+  if (oiTrend !== 0) {
     if (priceTrend && oiTrend > 0) {
       return <Badge color="green">Long Buildup</Badge>;
     }
@@ -53,18 +52,20 @@ function calculateOiInference(previousCandle: number[], candle: number[]) {
     if (!priceTrend && oiTrend > 0) {
       return <Badge color="red">Short Buildup</Badge>;
     }
-  }
 
-  if (!priceTrend && oiTrend < 0) {
-    return <Badge color="yellow">Long Unwinding</Badge>;
-  }
-  if (priceTrend && oiTrend < 0) {
-    return <Badge color="yellow">Short Covering</Badge>;
+    if (!priceTrend && oiTrend < 0) {
+      return <Badge color="yellow">Long Unwinding</Badge>;
+    }
+    if (priceTrend && oiTrend < 0) {
+      return <Badge color="yellow">Short Covering</Badge>;
+    }
   }
 }
 
 function volumeInference(candle: number[]) {
-  if (candle[5] > 20000) {
+  if (candle[5] > 10000) {
     return <Badge color="green">{candle[5]}</Badge>;
+  } else {
+    return candle[5];
   }
 }

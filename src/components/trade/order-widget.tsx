@@ -19,7 +19,7 @@ interface IOrderWidget {
 
 export default function OrderWidget(props: IOrderWidget) {
   const { socketData, subscribeToInstrument, unSubscribeToInstrument } = useContext(WebsocketContext);
-  const { orderConfig } = useContext(TradeContext);
+  const { orderConfig, setRecentOrderId } = useContext(TradeContext);
   const [price, setPrice] = useState();
 
   async function handlePlaceOrder() {
@@ -65,6 +65,7 @@ export default function OrderWidget(props: IOrderWidget) {
         stopLoss.toString(),
       );
     }
+    setRecentOrderId(Math.random().toString());
   }
 
   const key = useMemo(() => {

@@ -1,0 +1,7 @@
+export enum OrderStatus {
+  'OPEN' = 'OPEN',
+  'TRIGGER_PENDING' = 'TRIGGER_PENDING',
+  'COMPLETE' = 'COMPLETE',
+  'CANCELED' = 'CANCELED',
+  'REJECTED' = 'REJECTED',
+}

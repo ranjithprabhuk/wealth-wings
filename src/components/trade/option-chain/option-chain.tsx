@@ -9,7 +9,7 @@ import { OptionChainRows } from './option-chain-rows';
 export type IOptionList = Record<string, Record<string, IOptionScrips[]>>;
 
 export default function OptionChain() {
-  const { selectedFutures, selectedIndex, selectedExpiryDate } = useContext(TradeContext);
+  const { selectedIndex, selectedExpiryDate } = useContext(TradeContext);
   const [optionList, setOptionList] = useState<IOptionList>({});
   const [strikePrice, setStrikePrice] = useState('');
 
@@ -41,7 +41,7 @@ export default function OptionChain() {
 
   return (
     <Table.ScrollContainer minWidth={800}>
-      <Table verticalSpacing="xs">
+      <Table verticalSpacing={"4px"}>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>CE Symbol</Table.Th>
