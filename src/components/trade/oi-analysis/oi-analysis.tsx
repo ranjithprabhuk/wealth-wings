@@ -3,12 +3,38 @@ import { DateInput } from '@mantine/dates';
 import { useContext, useEffect, useState } from 'react';
 import { TradeContext } from '../../../store/trade-provider';
 import { ChartInterval } from '../../../constants/chart-interval';
-import { getInstrumentQuote } from '../../../services/zerodha/getInstrumentQuote';
+import { getInstrumentToken } from '../../../services/zerodha/getInstrumentQuote';
 import * as dayjs from 'dayjs';
 import { getInstrumentData } from '../../../services/zerodha/getInstrumentData';
 import OiAnalysisTable from './oi-analysis-table';
 import '@mantine/dates/styles.css';
 import TaMath from 'ta-math';
+
+function calculateSuperTrend(high, low, close, atr, period = 10, multiplier = 2) {
+  const supertrend = [];
+  let prevSupertrend = (high[0] + low[0]) / 2; // Initial supertrend
+
+  for (let i = 0; i < atr.length; i++) {
+    const upperBand = (high[i + 1] + low[i + 1]) / 2 + multiplier * atr[i];
+    const lowerBand = (high[i + 1] + low[i + 1]) / 2 - multiplier * atr[i];
+
+    let currentSupertrend;
+    if (close[i + 1] > prevSupertrend) {
+      currentSupertrend = lowerBand;
+    } else if (close[i + 1] < prevSupertrend) {
+      currentSupertrend = upperBand;
+    } else {
+      currentSupertrend = prevSupertrend;
+    }
+
+    supertrend.push(currentSupertrend);
+    prevSupertrend = currentSupertrend;
+  }
+
+  return supertrend.reverse();
+
+  // return superTrend.reverse();
+}
 
 export default function OiAnalysis() {
   const { selectedIndex, selectedFutures } = useContext(TradeContext);
@@ -19,36 +45,46 @@ export default function OiAnalysis() {
 
   async function getOiData() {
     if (selectedFutures.exch && selectedFutures.tsym) {
-      const instrumentWithExchange = `${selectedFutures.exch}:${selectedIndex.zname}${dayjs(dateValue)
-        .format('YYMMM')
-        .toUpperCase()}FUT`;
-      const zerodhaInstrumentQuote = await getInstrumentQuote(instrumentWithExchange);
-      const instrumentData = await getInstrumentData(
-        zerodhaInstrumentQuote.data[instrumentWithExchange].instrument_token,
-        selectedChartInterval,
-        dayjs(dateValue).startOf('day').format('YYYY-MM-DD'),
-        dayjs(dateValue).endOf('day').format('YYYY-MM-DD'),
-      );
+      const instrumentWithExchange = `${selectedIndex.zname}${dayjs(dateValue).format('YYMMM').toUpperCase()}FUT`;
+      const zerodhaInstrumentToken = await getInstrumentToken(instrumentWithExchange);
+      if (zerodhaInstrumentToken) {
+        const instrumentData = await getInstrumentData(
+          zerodhaInstrumentToken,
+          selectedChartInterval,
+          dayjs(dateValue).startOf('day').format('YYYY-MM-DD'),
+          dayjs(dateValue).endOf('day').format('YYYY-MM-DD'),
+        );
 
-      const technicalAnalysis = new TaMath([...instrumentData.data.candles], simpleFormat);
+        const technicalAnalysis = new TaMath([...instrumentData.data.candles], simpleFormat);
 
-      setCandles(instrumentData.data.candles.reverse());
-      setTechnicalIndicators({
-        rsi: technicalAnalysis.rsi(14).reverse(),
-      });
+        setCandles(instrumentData.data.candles.reverse());
+        setTechnicalIndicators({
+          rsi: technicalAnalysis.rsi(14).reverse(),
+          atr: technicalAnalysis.atr(10).reverse(),
+          sd: technicalAnalysis.stdev(10).reverse(),
+          superTrend: calculateSuperTrend(
+            technicalAnalysis.$high,
+            technicalAnalysis.$low,
+            technicalAnalysis.$close,
+            technicalAnalysis.atr(10),
+            10,
+            1,
+          ) as number[],
+        });
+      }
     }
   }
 
   useEffect(() => {
     if (selectedFutures) {
-      // const getOiDataInInterval = setInterval(getOiData, 1000 * 20);
+      const getOiDataInInterval = setInterval(getOiData, 1000 * 20);
 
       getOiData();
       return () => {
-        // clearInterval(getOiDataInInterval);
+        clearInterval(getOiDataInInterval);
       };
     }
-  }, [selectedFutures]);
+  }, [selectedFutures, selectedChartInterval, selectedIndex, dateValue]);
 
   return (
     <Box>

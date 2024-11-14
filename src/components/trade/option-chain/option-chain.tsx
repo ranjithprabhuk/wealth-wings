@@ -41,7 +41,7 @@ export default function OptionChain() {
 
   return (
     <Table.ScrollContainer minWidth={800}>
-      <Table verticalSpacing={"4px"}>
+      <Table verticalSpacing={'4px'}>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>CE Symbol</Table.Th>

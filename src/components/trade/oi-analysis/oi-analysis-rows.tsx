@@ -5,6 +5,10 @@ interface IOiAnalysisRows {
   previousCandle: number[];
   candle: number[];
   rsi: number;
+  atr: number;
+  sd: number;
+  superTrend: string;
+  prevSuperTrend: string;
 }
 
 export function OiAnalysisRows(props: IOiAnalysisRows) {
@@ -26,22 +30,19 @@ export function OiAnalysisRows(props: IOiAnalysisRows) {
         <Text>{props.candle[4]}</Text>
       </Table.Td>
       <Table.Td>{volumeInference(props.candle)}</Table.Td>
-      {/* <Table.Td>
-        <Text>{props.candle[5]}</Text>
-      </Table.Td> */}
       <Table.Td>
         <Text>{(props.previousCandle[6] as any) - (props.candle[6] as any)}</Text>
       </Table.Td>
       <Table.Td>{calculateOiInference(props.previousCandle, props.candle)}</Table.Td>
       <Table.Td>
-        <Text>{props.rsi}</Text>
+        <Badge color={props.superTrend === 'UP' ? 'green' : 'red'}>{props.candle[4]}</Badge>
       </Table.Td>
     </Table.Tr>
   );
 }
 
 function calculateOiInference(previousCandle: number[], candle: number[]) {
-  const priceTrend = candle[1] > candle[4] && previousCandle[4] > candle[4];
+  const priceTrend = candle[1] > candle[4] || previousCandle[4] > candle[4];
   const oiTrend = previousCandle[6] - candle[6];
 
   if (oiTrend !== 0) {
@@ -69,3 +70,14 @@ function volumeInference(candle: number[]) {
     return candle[5];
   }
 }
+
+// function calculateTrend(superTrend: string, candle: number[]) {
+//   const priceTrend = candle[1] > candle[4] && previousCandle[4] > candle[4];
+//   const oiTrend = previousCandle[6] - candle[6];
+
+//   if (superTrend < candle[4]) {
+//     return <Badge color="green">Up</Badge>;
+//   }
+
+//   return <Badge color="red">Down</Badge>;
+// }

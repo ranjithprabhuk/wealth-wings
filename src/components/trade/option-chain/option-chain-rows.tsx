@@ -22,6 +22,7 @@ export function OptionChainRows(props: IOptionChainRows) {
         </Table.Td>
         <Table.Td>
           <OrderWidget
+            currentStrike={strikePrice}
             instrument={option[OptionsType.CE]}
             optionType={OptionsType.CE}
             orderType={OrderType.Buy}
@@ -29,6 +30,7 @@ export function OptionChainRows(props: IOptionChainRows) {
         </Table.Td>
         <Table.Td>
           <OrderWidget
+            currentStrike={strikePrice}
             instrument={option[OptionsType.CE]}
             optionType={OptionsType.CE}
             orderType={OrderType.Sell}
@@ -40,6 +42,7 @@ export function OptionChainRows(props: IOptionChainRows) {
         </Table.Td>
         <Table.Td>
           <OrderWidget
+            currentStrike={strikePrice}
             instrument={option[OptionsType.PE]}
             optionType={OptionsType.PE}
             orderType={OrderType.Buy}
@@ -47,6 +50,7 @@ export function OptionChainRows(props: IOptionChainRows) {
         </Table.Td>
         <Table.Td>
           <OrderWidget
+            currentStrike={strikePrice}
             instrument={option[OptionsType.PE]}
             optionType={OptionsType.PE}
             orderType={OrderType.Sell}

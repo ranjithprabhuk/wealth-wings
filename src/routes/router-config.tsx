@@ -48,7 +48,7 @@ export default function RouterConfiguration() {
               errorElement: <ErrorPage />,
             },
             {
-              path: '/auth',
+              path: '/zerodha',
               element: (
                 <Suspense fallback={<Loader />}>
                   <Login />

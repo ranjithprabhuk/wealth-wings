@@ -41,11 +41,11 @@ export default function OptionWidget(props: IOptionsWidget) {
 
   return (
     <Box>
-      <Box>
+      {/* <Box>
         <Box display={'flex'} style={{ justifyContent: 'space-between' }}>
           {selectedOption && (
             <Box>
-              <OrderWidget optionType={props.optionType} orderType={OrderType.Buy} instrument={selectedOption} />
+              <OrderWidget currentStrike={props.currentStrike} optionType={props.optionType} orderType={OrderType.Buy} instrument={selectedOption} />
             </Box>
           )}
           <Box style={{ width: 260 }}>
@@ -58,11 +58,11 @@ export default function OptionWidget(props: IOptionsWidget) {
           </Box>
           <Box>
             {selectedOption && (
-              <OrderWidget optionType={props.optionType} orderType={OrderType.Sell} instrument={selectedOption} />
+              <OrderWidget currentStrike={props.currentStrike} optionType={props.optionType} orderType={OrderType.Sell} instrument={selectedOption} />
             )}
           </Box>
         </Box>
-      </Box>
+      </Box> */}
     </Box>
   );
 }

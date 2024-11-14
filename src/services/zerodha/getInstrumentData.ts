@@ -7,7 +7,7 @@ export async function getInstrumentData(
   endDate: string,
 ): Promise<any> {
   return await zerodhaFetchWrapper(
-    `/instruments/historical/${instrumentToken}/${interval}?oi=1&from=${startDate}&to=${endDate}`,
+    `oms/instruments/historical/${instrumentToken}/${interval}?oi=1&from=${startDate}&to=${endDate}`,
     'GET',
   );
 }

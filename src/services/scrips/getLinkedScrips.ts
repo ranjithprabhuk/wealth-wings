@@ -10,7 +10,7 @@ export async function getLinkedScrips(
   fut: IFuturesInstrument[];
   opt_exp: IOptionExpiry[];
 }> {
-  return await fetchWrapper(`${import.meta.env.VITE_BASE_URL}/GetLinkedScrips`, {
+  return await fetchWrapper(`${import.meta.env.VITE_BASE_URL}GetLinkedScrips`, {
     method: 'POST',
     headers: {
       'Content-Type': 'text/plain; charset=utf-8',

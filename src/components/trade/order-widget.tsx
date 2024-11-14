@@ -1,4 +1,4 @@
-import { Box, Button } from '@mantine/core';
+import { Box, Button, Flex } from '@mantine/core';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { WebsocketContext } from '../../store/websocket-provider';
 import { OrderType } from '../../enum/order-type';
@@ -15,12 +15,14 @@ interface IOrderWidget {
   optionType: OptionsType;
   orderType: OrderType;
   instrument: IInstrument;
+  currentStrike: string;
 }
 
 export default function OrderWidget(props: IOrderWidget) {
   const { socketData, subscribeToInstrument, unSubscribeToInstrument } = useContext(WebsocketContext);
-  const { orderConfig, setRecentOrderId } = useContext(TradeContext);
+  const { orderConfig, setRecentOrderId, selectedIndex } = useContext(TradeContext);
   const [price, setPrice] = useState();
+  const [derivativePrice, setDerivativePrice] = useState();
 
   async function handlePlaceOrder() {
     const { productName, productType, quantity, stopLoss, profitTarget } = orderConfig;
@@ -88,11 +90,40 @@ export default function OrderWidget(props: IOrderWidget) {
     };
   }, [props.instrument]);
 
+  useEffect(() => {
+    if (socketData?.[selectedIndex?.token]?.['lp']) {
+      setDerivativePrice(socketData?.[selectedIndex?.token]?.['lp']);
+    }
+  }, [socketData?.[selectedIndex?.token]?.['lp']]);
+
   return (
     <Box>
-      <Button size="compact-xs" color={props.orderType === OrderType.Buy ? 'green' : 'red'} onClick={handlePlaceOrder}>
+      {/* {props.optionType === OptionsType.CE && props.orderType === OrderType.Buy && (
+        <span style={{ width: 50, marginRight: 4 }}>
+          {derivativePrice && price ? `${Math.round(derivativePrice - parseInt(props.currentStrike))}` : ''}
+        </span>
+      )} */}
+      <Button
+        style={{ width: 60 }}
+        size="compact-xs"
+        color={props.orderType === OrderType.Buy ? 'green' : 'red'}
+        onClick={handlePlaceOrder}
+      >
         {props.orderType} {price ? ` - ${price}` : ''}
       </Button>
+      {props.orderType === OrderType.Buy && (
+        <span style={{ width: 50, marginLeft: 4 }}>
+          {derivativePrice && price ? (
+            <span>
+              {props.optionType === OptionsType.PE
+                ? `${Math.round(parseInt(props.currentStrike) - derivativePrice - price)}`
+                : `${Math.round(derivativePrice - parseInt(props.currentStrike) - price)}`}
+            </span>
+          ) : (
+            ''
+          )}
+        </span>
+      )}
     </Box>
   );
 }
