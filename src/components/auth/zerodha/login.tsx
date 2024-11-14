@@ -1,11 +1,13 @@
-import { TextInput, PasswordInput, Checkbox, Anchor, Paper, Title, Container, Group, Button } from '@mantine/core';
+import { TextInput, PasswordInput, Paper, Title, Container, Button } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { getLocalStorageValue } from '../../../utils/localStorage/getLocalStorageValue';
 import { setLocalStorageValue } from '../../../utils/localStorage/setLocalStorageValue';
 import { loginToZerodha } from '../../../services/zerodha/loginToZerodha';
-import { getStringBetween } from '../../../utils/string/getStringBetween';
+import { useNavigate } from 'react-router-dom';
 
 export function Login() {
+  const navigate = useNavigate();
+
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [totp, setTotp] = useState('');
@@ -14,9 +16,8 @@ export function Login() {
     setLocalStorageValue('kite-userid', userId);
     const response = await loginToZerodha(password, totp);
     if (response && response.headers.length > 0) {
-      const zerodhaToken = getStringBetween(response.headers[3], 'enctoken=', ';');
-      console.log('zerodhaToken', zerodhaToken);
-      setLocalStorageValue('zerodha-token', zerodhaToken);
+      setLocalStorageValue('zerodha-token', JSON.stringify(response.headers));
+      navigate('/trade ');
     }
   }
 
