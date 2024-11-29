@@ -9,6 +9,7 @@ import { getInstrumentData } from '../../../services/zerodha/getInstrumentData';
 import OiAnalysisTable from './oi-analysis-table';
 import '@mantine/dates/styles.css';
 import TaMath from 'ta-math';
+import { TREND } from '../../../enum/trend';
 
 function calculateSuperTrend(high, low, close, atr, period = 10, multiplier = 2) {
   const supertrend = [];
@@ -32,12 +33,10 @@ function calculateSuperTrend(high, low, close, atr, period = 10, multiplier = 2)
   }
 
   return supertrend.reverse();
-
-  // return superTrend.reverse();
 }
 
 export default function OiAnalysis() {
-  const { selectedIndex, selectedFutures } = useContext(TradeContext);
+  const { currentTrend, selectedIndex, selectedFutures, setCurrentTrend } = useContext(TradeContext);
   const [dateValue, setDateValue] = useState<Date | null>(new Date());
   const [selectedChartInterval, setSelectedChartInterval] = useState('minute');
   const [candles, setCandles] = useState([]);
@@ -56,20 +55,28 @@ export default function OiAnalysis() {
         );
 
         const technicalAnalysis = new TaMath([...instrumentData.data.candles], simpleFormat);
+        const superTrend = calculateSuperTrend(
+          technicalAnalysis.$high,
+          technicalAnalysis.$low,
+          technicalAnalysis.$close,
+          technicalAnalysis.atr(10),
+          10,
+          1,
+        );
+        const computedCurrentTrend = superTrend[0] < technicalAnalysis?.$close?.reverse()?.[0] ? TREND.UP : TREND.DOWN;
+
+        if (computedCurrentTrend && superTrend[0] && superTrend[1]) {
+          if (computedCurrentTrend !== currentTrend) {
+            setCurrentTrend(computedCurrentTrend);
+          }
+        }
 
         setCandles(instrumentData.data.candles.reverse());
         setTechnicalIndicators({
           rsi: technicalAnalysis.rsi(14).reverse(),
           atr: technicalAnalysis.atr(10).reverse(),
           sd: technicalAnalysis.stdev(10).reverse(),
-          superTrend: calculateSuperTrend(
-            technicalAnalysis.$high,
-            technicalAnalysis.$low,
-            technicalAnalysis.$close,
-            technicalAnalysis.atr(10),
-            10,
-            1,
-          ) as number[],
+          superTrend,
         });
       }
     }

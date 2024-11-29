@@ -5,6 +5,7 @@ import { IOrderConfiguration } from '../types/order-configuration';
 import { IInstrument } from '../types/instrument';
 import { IFuturesInstrument } from '../types/futures-instrument';
 import { IOptionExpiry } from '../types/option-expiry';
+import { TREND } from '../enum/trend';
 
 interface ITradeContext {
   orderConfig: IOrderConfiguration;
@@ -14,6 +15,7 @@ interface ITradeContext {
   futuresList: IFuturesInstrument[];
   expiryList: IOptionExpiry[];
   recentOrderId: string;
+  currentTrend: TREND;
   handleOrderConfigUpdate: (key: string, value: number | string) => void;
   setSelectedIndex: (instrument: IInstrument) => void;
   setSelectedFutures: (instrument: IFuturesInstrument) => void;
@@ -21,32 +23,10 @@ interface ITradeContext {
   setFuturesList: (list: IFuturesInstrument[]) => void;
   setExpiryList: (list: IOptionExpiry[]) => void;
   setRecentOrderId: (orderId: string) => void;
+  setCurrentTrend: (trend: TREND) => void;
 }
 
-const initialTradeContextData: ITradeContext = {
-  orderConfig: {
-    profitTarget: 1,
-    stopLoss: 5,
-    quantity: 100,
-    productName: ProductName.BO,
-    productType: ProductType.Market,
-  },
-  selectedIndex: null,
-  selectedFutures: null,
-  selectedExpiryDate: null,
-  futuresList: [],
-  expiryList: [],
-  recentOrderId: '',
-  handleOrderConfigUpdate: () => {},
-  setSelectedIndex: () => {},
-  setSelectedFutures: () => {},
-  setSelectedExpiryDate: () => {},
-  setFuturesList: () => {},
-  setExpiryList: () => {},
-  setRecentOrderId: () => {},
-};
-
-export const TradeContext = createContext<ITradeContext>(initialTradeContextData);
+export const TradeContext = createContext<ITradeContext>(null);
 
 export const TradeProvider = ({ children }) => {
   const [selectedIndex, setSelectedIndex] = useState<IInstrument>();
@@ -55,12 +35,13 @@ export const TradeProvider = ({ children }) => {
   const [futuresList, setFuturesList] = useState<IFuturesInstrument[]>([]);
   const [expiryList, setExpiryList] = useState<IOptionExpiry[]>([]);
   const [recentOrderId, setRecentOrderId] = useState('');
+  const [currentTrend, setCurrentTrend] = useState<TREND>(null);
   const [orderConfig, setOrderConfig] = useState<IOrderConfiguration>({
-    profitTarget: 1,
-    stopLoss: 5,
-    quantity: 100,
+    profitTarget: 5,
+    stopLoss: 10,
+    quantity: 25,
     productName: ProductName.BO,
-    productType: ProductType.Market,
+    productType: ProductType.Limit,
   });
 
   function handleOrderConfigUpdate(key: string, value: number | string) {
@@ -79,6 +60,7 @@ export const TradeProvider = ({ children }) => {
         futuresList,
         expiryList,
         recentOrderId,
+        currentTrend,
         handleOrderConfigUpdate,
         setSelectedIndex,
         setSelectedFutures,
@@ -86,6 +68,7 @@ export const TradeProvider = ({ children }) => {
         setFuturesList,
         setExpiryList,
         setRecentOrderId,
+        setCurrentTrend,
       }}
     >
       {children}

@@ -10,6 +10,8 @@ import { IOrderConfiguration } from '../../types/order-configuration';
 import { OptionsType } from '../../enum/option-type';
 import { IInstrument } from '../../types/instrument';
 import { TradeContext } from '../../store/trade-provider';
+import { TREND } from '../../enum/trend';
+import { getNearestFiveDigitNumber } from '../../utils/number/getNearestFiveDigitNumber';
 
 interface IOrderWidget {
   optionType: OptionsType;
@@ -20,7 +22,7 @@ interface IOrderWidget {
 
 export default function OrderWidget(props: IOrderWidget) {
   const { socketData, subscribeToInstrument, unSubscribeToInstrument } = useContext(WebsocketContext);
-  const { orderConfig, setRecentOrderId, selectedIndex } = useContext(TradeContext);
+  const { currentTrend, orderConfig, setRecentOrderId, selectedIndex } = useContext(TradeContext);
   const [price, setPrice] = useState();
   const [derivativePrice, setDerivativePrice] = useState();
 
@@ -95,6 +97,28 @@ export default function OrderWidget(props: IOrderWidget) {
       setDerivativePrice(socketData?.[selectedIndex?.token]?.['lp']);
     }
   }, [socketData?.[selectedIndex?.token]?.['lp']]);
+
+  useEffect(() => {
+    if (import.meta.env.VITE_AUTO_TRADE) {
+      if (currentTrend) {
+        if (currentTrend === TREND.UP) {
+          if (
+            props.optionType === OptionsType.CE &&
+            parseInt(props.currentStrike) === getNearestFiveDigitNumber(derivativePrice)?.roundDown
+          ) {
+            handlePlaceOrder();
+          }
+        } else {
+          if (
+            props.optionType === OptionsType.PE &&
+            parseInt(props.currentStrike) === getNearestFiveDigitNumber(derivativePrice)?.roundUp
+          ) {
+            handlePlaceOrder();
+          }
+        }
+      }
+    }
+  }, [currentTrend]);
 
   return (
     <Box>
