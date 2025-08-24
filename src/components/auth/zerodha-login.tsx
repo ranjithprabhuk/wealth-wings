@@ -1,15 +1,15 @@
-import { TextInput, PasswordInput, Paper, Title, Container, Button } from '@mantine/core';
+import { TextInput, PasswordInput, Paper, Title, Button, Box } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import { getLocalStorageValue } from '../../../utils/localStorage/getLocalStorageValue';
-import { setLocalStorageValue } from '../../../utils/localStorage/setLocalStorageValue';
-import { loginToZerodha } from '../../../services/zerodha/loginToZerodha';
+import { getLocalStorageValue } from '../../utils/localStorage/getLocalStorageValue';
+import { setLocalStorageValue } from '../../utils/localStorage/setLocalStorageValue';
+import { loginToZerodha } from '../../services/zerodha/loginToZerodha';
 import { useNavigate } from 'react-router-dom';
 
-export function Login() {
+export function ZerodhaLogin() {
   const navigate = useNavigate();
 
   const [userId, setUserId] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('Janaki@0502');
   const [totp, setTotp] = useState('');
 
   async function hanldleLogin() {
@@ -26,8 +26,8 @@ export function Login() {
   }, []);
 
   return (
-    <Container size={420} my={40}>
-      <Title ta="center">Welcome back!</Title>
+    <Box>
+      <Title ta="center">Zerodha Login</Title>
 
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <TextInput
@@ -58,6 +58,6 @@ export function Login() {
           Connect to Zerodha
         </Button>
       </Paper>
-    </Container>
+    </Box>
   );
 }

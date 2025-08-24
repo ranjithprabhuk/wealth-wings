@@ -1,4 +1,4 @@
-import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Navigate, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { authenticateUser } from '../services/auth';
 import { getUserProfile } from '../services/user';
@@ -8,22 +8,26 @@ import { removeLocalStorageValue } from '../utils/localStorage/removeLocalStorag
 import { setLocalStorageValue } from '../utils/localStorage/setLocalStorageValue';
 import { getLocalStorageValue } from '../utils/localStorage/getLocalStorageValue';
 import { PageLoader } from '../components/shared/page-loader';
+import { FyersService } from '../services/fyers/fyers-service';
 
 export default function Authentication(props) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const requestCode = useMemo(() => searchParams.get('code'), [searchParams]);
+  const authCode = useMemo(() => searchParams.get('auth_code'), [searchParams]);
 
   const redirectToAuth = useCallback(() => {
     removeLocalStorageValue('token');
     removeLocalStorageValue('userId');
+    removeLocalStorageValue('fyers-access-token');
     window.location.replace(`${import.meta.env.VITE_AUTH_REDIRECT_URL}${import.meta.env.VITE_API_KEY}`);
   }, []);
 
   async function OnAuthRedirection() {
-    if (requestCode) {
+    if (requestCode && requestCode !== '200') {
       const response = await authenticateUser(requestCode);
       if (response.stat == Stat.Ok) {
         setLocalStorageValue('token', response.token);
@@ -60,9 +64,26 @@ export default function Authentication(props) {
     setSearchParams(searchParams);
   }
 
+  async function onFyersAuthSuccess() {
+    if (authCode) {
+      if (window.location.hostname !== 'localhost') {
+        window.location.href = 'http://localhost:5173?auth_code=' + authCode;
+      } else {
+        const accessToken = await FyersService.generateAccessToken(authCode);
+        console.log('accessToken', accessToken);
+        setLocalStorageValue('fyers-access-token', accessToken);
+        navigate('/trade');
+      }
+    }
+  }
+
   useEffect(() => {
     OnAuthRedirection();
   }, [requestCode]);
+
+  useEffect(() => {
+    onFyersAuthSuccess();
+  }, [authCode]);
 
   useEffect(() => {
     OnAppInit();

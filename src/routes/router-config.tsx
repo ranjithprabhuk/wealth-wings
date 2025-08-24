@@ -4,7 +4,7 @@ import Root from '../routes/root';
 import { Loader } from '@mantine/core';
 import Authentication from './authentication';
 import { TradeProvider } from '../store/trade-provider';
-import { Login } from '../components/auth/zerodha/login';
+import { BrokerLogin } from '../components/auth/broker-login';
 
 // LAZY ROUTES
 const ErrorPage = React.lazy(() => import('../routes/error-page'));
@@ -48,10 +48,10 @@ export default function RouterConfiguration() {
               errorElement: <ErrorPage />,
             },
             {
-              path: '/zerodha',
+              path: '/brokers',
               element: (
                 <Suspense fallback={<Loader />}>
-                  <Login />
+                  <BrokerLogin />
                 </Suspense>
               ),
               errorElement: <ErrorPage />,

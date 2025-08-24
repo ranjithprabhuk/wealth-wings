@@ -39,7 +39,7 @@ export const TradeProvider = ({ children }) => {
   const [orderConfig, setOrderConfig] = useState<IOrderConfiguration>({
     profitTarget: 5,
     stopLoss: 10,
-    quantity: 25,
+    quantity: 250,
     productName: ProductName.BO,
     productType: ProductType.Limit,
   });

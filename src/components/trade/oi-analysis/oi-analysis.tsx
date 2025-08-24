@@ -82,16 +82,16 @@ export default function OiAnalysis() {
     }
   }
 
-  useEffect(() => {
-    if (selectedFutures) {
-      const getOiDataInInterval = setInterval(getOiData, 1000 * 20);
+  // useEffect(() => {
+  //   if (selectedFutures) {
+  //     const getOiDataInInterval = setInterval(getOiData, 1000 * 20);
 
-      getOiData();
-      return () => {
-        clearInterval(getOiDataInInterval);
-      };
-    }
-  }, [selectedFutures, selectedChartInterval, selectedIndex, dateValue]);
+  //     getOiData();
+  //     return () => {
+  //       clearInterval(getOiDataInInterval);
+  //     };
+  //   }
+  // }, [selectedFutures, selectedChartInterval, selectedIndex, dateValue]);
 
   return (
     <Box>
